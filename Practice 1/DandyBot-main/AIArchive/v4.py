@@ -1,4 +1,4 @@
-﻿from collections import deque
+from collections import deque
 import random
 
 DEBUG = False
@@ -215,12 +215,6 @@ def universal_strategy(check, x, y) -> str:
     elif dx == 0 and dy == 1:
         return "down"
     return "pass"
-
-
-def level1(check, x, y):
-    if check("wall", x + 2, y):
-        return "down"
-    return "right"
 
 
 def script(check, x, y):

@@ -1,4 +1,4 @@
-﻿from collections import deque
+from collections import deque
 import random
 
 DEBUG = False
@@ -26,7 +26,7 @@ def draw_graph(check, x, y, max_distance=None) -> (dict, dict):
     distances = {start: 0}
 
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-    #random.shuffle(directions)
+    random.shuffle(directions)
 
     while queue:
         current = queue.popleft()
