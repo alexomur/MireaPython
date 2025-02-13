@@ -1,7 +1,9 @@
 {
   "players": [
-    "user_bot",
-    "random_bot"
+    "v1",
+    "v2",
+    "v3",
+    "v4"
   ],
   "levels": [
     {
