@@ -1,11 +1,13 @@
-﻿import time
+﻿import random
+import time
 import sys
 import json
 from importlib import import_module
 from pathlib import Path
-from random import randrange, shuffle
+from random import shuffle
 import tkinter as tk
-from plitk import load_tileset, PliTk
+from plitk import load_tileset, PliTk  # Предполагается, что этот модуль доступен
+import concurrent.futures  # Для многопроцессорного выполнения
 
 SCALE = 1
 DELAY = 50
@@ -22,6 +24,21 @@ WALL = "wall"
 EMPTY = "empty"
 
 
+# ----------------- Dummy-классы для headless-режима -----------------
+class DummyCanvas:
+    def config(self, **kwargs):
+        pass
+    def pack(self, **kwargs):
+        pass
+
+class DummyLabel:
+    def __init__(self):
+        self.text = ""
+    def __setitem__(self, key, value):
+        self.text = value
+
+
+# ----------------- Основной игровой код -----------------
 class Board:
     def __init__(self, game, canvas, label):
         self.game = game
@@ -49,6 +66,7 @@ class Board:
         cols, rows = len(data[0]), len(data)
         self.map = [[data[y][x] for y in range(rows)] for x in range(cols)]
         self.has_player = [[None for y in range(rows)] for x in range(cols)]
+        # Если canvas — DummyCanvas, то config ничего не делает
         self.canvas.config(width=cols * self.tileset["tile_width"] * SCALE,
                            height=rows * self.tileset["tile_height"] * SCALE)
         self.level["gold"] = sum(sum(int(cell)
@@ -168,7 +186,6 @@ def start_game():
             root.after(max(DELAY - dt, 0), update)
         else:
             label["text"] += "\n\nGAME OVER!"
-
     root = tk.Tk()
     root.configure(background="black")
     canvas = tk.Canvas(root, bg="black", highlightthickness=0)
@@ -182,5 +199,62 @@ def start_game():
     root.after(0, update)
     root.mainloop()
 
+
+# ----------------- Функции для симуляции игр -----------------
+def simulate_game(game, seed=None):
+    """
+    Выполняет одну симуляцию игры в headless-режиме (без графики)
+    и возвращает имя победившего бота.
+    """
+    if seed is not None:
+        random.seed(seed)
+    # Создаём корневое окно Tk и сразу прячем его.
+    root = tk.Tk()
+    root.withdraw()
+    # Используем настоящий Canvas, привязанный к корневому окну,
+    # чтобы PliTk смог корректно создать изображения.
+    canvas = tk.Canvas(root)
+    label = DummyLabel()
+    board = Board(game, canvas, label)
+    while board.play():
+        pass
+    # Победителем считается игрок с наибольшим количеством золота.
+    players_sorted = sorted(board.players, key=lambda p: p.gold, reverse=True)
+    winner = players_sorted[0].name
+    # Уничтожаем корневое окно.
+    root.destroy()
+    return winner
+
+
+def run_simulations(num_games, game):
+    """
+    Запускает num_games симуляций игры в отдельных процессах и собирает статистику по победам.
+    После завершения выводит в консоли, сколько раз победил каждый бот.
+    """
+    results = {}
+
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        futures = [executor.submit(simulate_game, game, seed=i) for i in range(num_games)]
+        for future in concurrent.futures.as_completed(futures):
+            winner = future.result()
+            results[winner] = results.get(winner, 0) + 1
+
+    print("Simulation Results:")
+    for bot, wins in results.items():
+        print(f"{bot}: {wins} wins")
+
+
+def run_games(num_games=10, filename="game.json"):
+    run_simulations(num_games, json.loads(Path(filename).read_text()))
+
+
+# ----------------- Главный блок -----------------
 if __name__ == "__main__":
-    start_game()
+    # Если в командной строке передан параметр "simulate", запускаем режим симуляции.
+    if len(sys.argv) > 1 and sys.argv[1] == "simulate":
+        num_games = int(sys.argv[2]) if len(sys.argv) > 2 else 4
+        filename = sys.argv[3] if len(sys.argv) > 3 else "game.json"
+        run_games(num_games, filename)
+    else:
+        start_game()
+        #run_games()
