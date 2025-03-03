@@ -1,6 +1,6 @@
 // Game Graph
 digraph {
-	rankdir=LR
+	rankdir=UD
 	start [label="Начало лабиринта" shape=Mdiamond]
 	room1 [label="Комната 1" shape=ellipse]
 	room2 [label="Комната 2" shape=ellipse]

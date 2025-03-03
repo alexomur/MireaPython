@@ -8,7 +8,7 @@ def build_dot_code(game_graph: dict) -> Digraph:
     и возвращает объект Digraph, содержащий узлы и рёбра игрового мира.
     """
     dot = Digraph(comment="Game Graph")
-    dot.attr(rankdir="LR")  # задаём направление графа слева направо
+    dot.attr(rankdir="UD")  # задаём направление графа слева направо
 
     # Создаём узлы: для стартовой, конечной и поражения задаём особые формы.
     for label, room in game_graph.items():
@@ -31,15 +31,9 @@ def build_dot_code(game_graph: dict) -> Digraph:
     return dot
 
 if __name__ == '__main__':
-    # Импортируем граф игрового мира из модуля game
     game_graph = game.build_game_graph()
 
-    # Генерируем dot граф
     dot = build_dot_code(game_graph)
 
-    # Выводим исходный код Dot в консоль
     print(dot.source)
-
-    # Визуализация: сохраняем и открываем граф (файл game_graph.pdf)
-    # dot.view() сохраняет файл и открывает его во внешнем просмотрщике
     dot.view(filename="game_graph.dot", cleanup=True)

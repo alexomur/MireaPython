@@ -6,12 +6,12 @@ class Action:
     def __init__(self, text: str, result: str, target: str = None, action_type: str = "move", correct: bool = None,
                  escape_fail_target: str = None):
         """
-        text: Текст действия, отображаемый игроку.
-        result: Сообщение, которое выводится после выбора действия.
-        target: Метка целевой комнаты при успешном исходе.
-        action_type: Тип действия – "move", "escape" или "fight".
-        correct: Для сражения – True, если выбранный вариант является верным.
-        escape_fail_target: Для побега – метка комнаты при неудаче.
+        :param text: Текст действия, отображаемый игроку.
+        :param result: Сообщение, которое выводится после выбора действия.
+        :param target: Метка целевой комнаты при успешном исходе.
+        :param action_type: Тип действия – "move", "escape" или "fight".
+        :param correct: Для сражения – True, если выбранный вариант является верным.
+        :param escape_fail_target: Для побега – метка комнаты при неудаче.
         """
         self.text = text
         self.result = result
@@ -24,10 +24,10 @@ class Action:
 class Room:
     def __init__(self, name: str, label: str, actions: list, dangerous: bool = False):
         """
-        name: Название комнаты.
-        label: Уникальная метка комнаты.
-        actions: Список объектов Action.
-        dangerous: Флаг, указывающий, что комната опасна.
+        :param name: Название комнаты.
+        :param label: Уникальная метка комнаты.
+        :param actions: Список объектов Action.
+        :param dangerous: Флаг, указывающий, что комната опасна.
         """
         self.name = name
         self.label = label
