@@ -1,0 +1,8 @@
+setup.py
+ObjectParser/__init__.py
+ObjectParser/example.py
+ObjectParser/parser.py
+ObjectParser.egg-info/PKG-INFO
+ObjectParser.egg-info/SOURCES.txt
+ObjectParser.egg-info/dependency_links.txt
+ObjectParser.egg-info/top_level.txt

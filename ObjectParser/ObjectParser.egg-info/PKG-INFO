@@ -1,0 +1,9 @@
+Metadata-Version: 2.2
+Name: ObjectParser
+Version: 0.0.2
+Summary: Object Parser made to parse yml and json data directly to objects by annotations
+Author: DrBright
+Author-email: alexomur111@gmail.com
+Dynamic: author
+Dynamic: author-email
+Dynamic: summary
