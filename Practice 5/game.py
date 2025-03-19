@@ -7,7 +7,7 @@ PAIRS = ("..LEXEGEZACEBISO"
          "ERATENBERALAVETI"
          "EDORQUANTEISRION")
 
-SEED = (0x1234, 0x5678, 0x9ABCD)
+SEED = (0x5A4A, 0x0248, 0xB753)
 
 
 def strip_dots(name: str) -> str:
@@ -16,27 +16,33 @@ def strip_dots(name: str) -> str:
 
 class Seed:
     def __init__(self, w0: int, w1: int, w2: int):
-        self.w0 = w0 & 0xFFFF
-        self.w1 = w1 & 0xFFFF
+        self.w0 = w0 & 0xFFFF  # сохраняем размерность
+        self.w1 = w1 & 0xFFFF  # 2 байта
         self.w2 = w2 & 0xFFFF
 
     def tweakseed(self):
         temp = (self.w0 + self.w1 + self.w2) & 0xFFFF
         self.w0, self.w1, self.w2 = self.w1, self.w2, temp
 
+class GoatSoupSeed:
+    def __init__(self, a = 0, b = 0, c = 0, d = 0):
+        self.a = a
+        self.b = b
+        self.c = c
+        self.d = d
 
 class PlanetarySystem:
     def __init__(self):
         self.x = 0
-        self.y = 0
-        self.economy = 0
-        self.govtype = 0
-        self.techlev = 0
-        self.population = 0
-        self.productivity = 0
-        self.radius = 0
-        self.goatsoupseed = {'a': 0, 'b': 0, 'c': 0, 'd': 0}
-        self.name = ""
+        self.y = 0  # byte unsigned
+        self.economy = 0  # 0-7
+        self.govtype = 0  # 0-7
+        self.techlev = 0  # 0-16
+        self.population = 0  # byte
+        self.productivity = 0  # 2 byte
+        self.radius = 0  # 2 byte, not used
+        self.goatsoupseed: GoatSoupSeed = GoatSoupSeed()
+        self.name = ""  # По хорошему 12 символов
 
 
 def make_system(seed: Seed) -> PlanetarySystem:
@@ -44,22 +50,30 @@ def make_system(seed: Seed) -> PlanetarySystem:
     system = PlanetarySystem()
     system.x = seed.w1 >> 8
     system.y = seed.w0 >> 8
+
     system.govtype = (seed.w1 >> 3) & 7
     system.economy = (seed.w0 >> 8) & 7
+
     if system.govtype <= 1:
         system.economy |= 2
+
     system.techlev = ((seed.w1 >> 8) & 3) + (system.economy ^ 7)
     system.techlev += (system.govtype >> 1)
-    if (system.govtype & 1) == 1:
+
+    if (system.govtype & 1) == 1:  # <= 1
         system.techlev += 1
+
     system.population = 4 * system.techlev + system.economy + system.govtype + 1
     system.productivity = (((system.economy ^ 7) + 3) * (system.govtype + 4)) * system.population * 8
     system.radius = 256 * (((seed.w2 >> 8) & 15) + 11) + system.x
-    system.goatsoupseed['a'] = seed.w1 & 0xFF
-    system.goatsoupseed['b'] = seed.w1 >> 8
-    system.goatsoupseed['c'] = seed.w2 & 0xFF
-    system.goatsoupseed['d'] = seed.w2 >> 8
-    longnameflag = seed.w0 & 64
+
+    system.goatsoupseed.a = seed.w1 & 0xFF  # 11111111
+    system.goatsoupseed.b = seed.w1 >> 8  # 1000
+    system.goatsoupseed.c = seed.w2 & 0xFF
+    system.goatsoupseed.d = seed.w2 >> 8
+
+    longnameflag = seed.w0 & 64  # 1000000
+
     name_chars = []
     for _ in range(3):
         pair_index = 2 * ((seed.w2 >> 8) & 31)
@@ -69,6 +83,7 @@ def make_system(seed: Seed) -> PlanetarySystem:
         pair_index = 2 * ((seed.w2 >> 8) & 31)
         seed.tweakseed()
         name_chars.append(PAIRS[pair_index:pair_index + 2])
+
     system.name = strip_dots(''.join(name_chars))
     return system
 
@@ -93,7 +108,6 @@ def visualize_galaxy(systems: List):
     for system in systems:
         plt.text(system.x, system.y - 2, system.name, fontsize=8, ha='center', va='top', color='#8888FF')
 
-    plt.title("Галактика")
     plt.xlabel("X")
     plt.ylabel("Y")
     plt.gca().set_facecolor('black')
